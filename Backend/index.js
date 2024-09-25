@@ -13,7 +13,8 @@ import applicationrouter from './routes/applicationroutes.js';
 const app=express();
 
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: "http://127.0.0.1:5173",
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specify allowed HTTP methods
     credentials: true,
   }));
 app.use(express.json());
@@ -38,3 +39,6 @@ app.listen(PORT,()=>{
 
 
 export default app;
+
+//just see the companycontroller where register is done by both student and recruiter so change it as per role
+//also see updateCompany where only recruiter can change the company details <--check it
