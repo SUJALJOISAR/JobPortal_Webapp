@@ -13,10 +13,11 @@ import applicationrouter from './routes/applicationroutes.js';
 const app=express();
 
 app.use(cors({
-    origin: "http://127.0.0.1:5173",
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specify allowed HTTP methods
-    credentials: true,
-  }));
+  origin: ["http://localhost:5173", "http://127.0.0.1:5173"], // Allow both
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true,
+}));
+app.use('/uploads', express.static('uploads'));
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(morgan("dev"));

@@ -9,6 +9,7 @@ import TabletLogin from '../../images/Tablet login.mp4';
 // import axios from 'axios';
 import { toast } from 'sonner';
 import { useAuth } from '../AuthContext/authContext';
+import { Loader2 } from 'lucide-react';
 
 const Login = () => {
     const {loading,login}=useAuth();
@@ -24,16 +25,7 @@ const Login = () => {
 
     const submitHandler = async (e) => {
         e.preventDefault();
-        // try {
-        //     const res=await axios.post('/user/login',input);
-        //     if (res.data.success) {
-        //         console.log(res.data);
-        //         toast.success(res.data.msg);
-        //         navigate('/');
-        //     }
-        // } catch (error) {
-        //     console.log(error);
-        // }
+        console.log("Login data:", input); // Log the login data
         const res = await login(input);
         if (res.success) {
             toast.success(res.msg);
@@ -106,7 +98,7 @@ const Login = () => {
                         <Button type="submit" className="w-full my-4 bg-gray-800 text-white">
                             {loading ? "Please wait..." : "Login"} {/* Loading message */}
                         </Button>
-                        {loading && <div className="loader">Loading...</div>} {/* Loader */}
+                        {loading && <Button className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button>} {/* Loader */}
                         <span className="text-sm text-black">
                             Don&apos;t have an account? <Link to="/register" className="text-blue-600">Signup</Link>
                         </span>

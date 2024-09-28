@@ -137,14 +137,16 @@ export const login = async (req, res) => {
       const token = jwt.sign(
         { id: user.id, email: user.email, role: user.role }, //payload
         process.env.JWT_SECRET,
-        { expiresIn: "7d" }
+        { expiresIn: "1d" }
       );
 
       res.cookie(process.env.COOKIE_NAME, token, {
+        path:"/",
         httpOnly: true,
         secure: true,
         signed: true,
         sameSite: "none",
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
       });
 
       // Successful login response
@@ -175,7 +177,9 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    res.clearCookie(process.env.COOKIE_NAME);
+    const cookie=process.env.COOKIE_NAME;
+    console.log("Clearing cookie: ", cookie); // Log cookie name
+    res.clearCookie(cookie);
     return res.status(200).json({
       msg: "User logout Successfully!!",
       success: true,
@@ -194,9 +198,17 @@ export const updateProfile = async (req, res) => {
     const { name, email, phone, bio, skills } = req.body;
     const file = req.file;
 
-    //handles files
+    if (!name || !email || !phone || !bio || !skills ) {
+      return res.status(400).json({
+        msg: 'Missing required fields',
+        success: false,
+      });
+    }
 
-    const skillsArray = skills.split(",");
+    // Validate skills before using .split
+    const skillsArray = typeof skills === 'string' ? skills.split(",") : Array.isArray(skills) ? skills : [];
+
+    //handles files
 
     const userId = req.user.id; // it will come from JWT token(middleware authentication) means see after authenticateToken is called in whatever response is send to this will be in form of request
 

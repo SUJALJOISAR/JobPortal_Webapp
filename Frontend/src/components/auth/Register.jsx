@@ -9,6 +9,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import Signup from '../../images/Sign up.mp4'; // Assuming you want to keep the same gif or video
 import { useAuth } from '../AuthContext/authContext';
+import { Loader2 } from 'lucide-react';
 
 const Register = () => {
     const [input, setInput] = useState({
@@ -157,7 +158,7 @@ const Register = () => {
                         <Button type="submit" className="w-full my-4 bg-gray-800 text-white">
                             {loading ? "Please wait..." : "Signup"} {/* Loading message */}
                         </Button>
-                        {loading && <div className="loader">Loading...</div>} {/* Loader */}
+                        {loading && <Button className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button>} {/* Loader */}
                         <span className="text-sm">Already have an account? <Link to="/login" className="text-blue-600">Login</Link></span>
                     </form>
 

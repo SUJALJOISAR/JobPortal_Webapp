@@ -8,7 +8,7 @@ import { Toaster } from './components/ui/sonner.jsx'
 import { AuthProvider } from './components/AuthContext/authContext.jsx'
 
 axios.defaults.baseURL = "http://localhost:5000/api";
-axios.defaults.withCredentials = false;
+axios.defaults.withCredentials = true;
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
