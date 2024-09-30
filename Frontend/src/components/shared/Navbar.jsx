@@ -41,15 +41,27 @@ const Navbar = () => {
                         ) : (
                             <Popover>
                                 <PopoverTrigger asChild>
+                                    {/* <Avatar className='cursor-pointer'>
+                                        <AvatarImage src={user?.profilePhoto || "https://github.com/shadcn.png"} alt={user.name || "User"} />
+                                    </Avatar> */}
                                     <Avatar className='cursor-pointer'>
-                                        <AvatarImage src={user.profilePhoto || "https://github.com/shadcn.png"} alt={user.name || "User"} />
+                                        <AvatarImage
+                                            src={user?.profilePhoto ? `http://localhost:5000${user.profilePhoto}` : "https://github.com/shadcn.png"}
+                                            alt={user.name || "User"}
+                                        />
                                     </Avatar>
                                 </PopoverTrigger>
                                 <PopoverContent className=''>
                                     <div className='flex gap-2 space-y-2'>
+                                        {/* <Avatar className='cursor-pointer'>
+                                            <AvatarImage src={user?.profilePhoto || "https://github.com/shadcn.png"} alt={user.name || "User"} />
+                                        </Avatar> */}
                                         <Avatar className='cursor-pointer'>
-                                            <AvatarImage src={user.profilePhoto || "https://github.com/shadcn.png"} alt={user.name || "User"} />
-                                        </Avatar>
+                                        <AvatarImage
+                                            src={user?.profilePhoto ? `http://localhost:5000${user.profilePhoto}` : "https://github.com/shadcn.png"}
+                                            alt={user.name || "User"}
+                                        />
+                                    </Avatar>
                                         <div>
                                             <h4 className='font-semibold'>{user.name}</h4>
                                             <p className='text-sm text-muted-foreground'>{user.email}</p>

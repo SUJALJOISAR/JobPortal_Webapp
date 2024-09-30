@@ -6,9 +6,14 @@ import cloudinary from "../utils/cloudinary.js";
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
+// Create __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 export const register = async (req, res) => {
   try {
     const { name, email, phone, password, role } = req.body;
+    const file=req.file;
 
     // Validate request data
     if (!name || !email || !phone || !password || !role) {
@@ -16,6 +21,12 @@ export const register = async (req, res) => {
         msg: "Something is missing",
         success: false,
       });
+    }
+
+     // If there's a file, save its path
+     let profilePhotoPath = null;
+     if (file) {
+      profilePhotoPath = `/uploads/${file.filename}`; // Store relative URL path
     }
 
     // Get the database connection
@@ -45,10 +56,10 @@ export const register = async (req, res) => {
 
         // Insert new user with the hashed password
         const insertSql =
-          "INSERT INTO users (name, email, phone, password, role) VALUES (?, ?, ?, ?, ?)";
+          "INSERT INTO users (name, email, phone, password, role,profilePhoto) VALUES (?, ?, ?, ?, ?,?)";
         db.query(
           insertSql,
-          [name, email, phone, hashedPassword, role],
+          [name, email, phone, hashedPassword, role,profilePhotoPath],
           (err, insertResult) => {
             if (err) {
               return res.status(500).json({
@@ -64,6 +75,7 @@ export const register = async (req, res) => {
               user: {
                 email: email,
                 role: role,
+                profilePhoto:profilePhotoPath
               },
             });
           }
@@ -167,6 +179,7 @@ export const login = async (req, res) => {
           skills: user.skills,
           resume: user.resume,
           resumeOriginalName: user.resumeOriginalName,
+          profilePhoto: user.profilePhoto, // Make sure this is included
         },
       });
     });
@@ -197,9 +210,7 @@ export const logout = async (req, res) => {
   }
 };
 
-// Create __dirname equivalent for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+
 
 export const updateProfile = async (req, res) => {
   try {
@@ -267,11 +278,13 @@ export const updateProfile = async (req, res) => {
         user.resumeOriginalName = file.originalname;
       }
 
-
+      
+      // The profile photo remains unchanged
+      const updatedProfilePhoto = user.profilePhoto; // Keep the existing profile photo
 
       // Update the user details in the database
       const updatequery =
-        "UPDATE users SET name=?, email=?, phone=?, bio=?, skills=?, resume=?, resumeOriginalName=? where id=?";
+        "UPDATE users SET name=?, email=?, phone=?, bio=?, skills=?, resume=?, resumeOriginalName=?,profilePhoto=? where id=?";
       const updateParams = [
         name,
         email,
@@ -280,6 +293,7 @@ export const updateProfile = async (req, res) => {
         skillsArray.join(","), // Join array back to string
         user.resume, // Resume URL
         user.resumeOriginalName, // Original resume file name
+        updatedProfilePhoto, // Use the existing profile photo
         userId,
       ];
 
@@ -313,6 +327,7 @@ export const updateProfile = async (req, res) => {
             skills: skillsArray,
             resume: user.resume,
             resumeOriginalName: user.resumeOriginalName,
+            profilePhoto: updatedProfilePhoto, // Return the existing profile photo
           },
         });
       });

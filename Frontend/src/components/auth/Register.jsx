@@ -42,18 +42,6 @@ const Register = () => {
         if (input.file) {
             formData.append("file", input.file);
         }
-        // try {
-        //     const res = await axios.post('/user/register', formData); 
-        //     if (res.data.success) {
-        //         toast.success(res.data.msg);
-        //         navigate('/login');
-        //     } else {
-        //         toast.error(res.data.msg); // Handle error messages
-        //     }
-        // } catch (error) {
-        //     console.log(error);
-        //     toast.error("An error occurred during registration."); // Generic error message
-        // }
         const res = await register(formData);
         if (res.success) {
             toast.success(res.msg);
