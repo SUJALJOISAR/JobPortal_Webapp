@@ -19,7 +19,7 @@ const Navbar = () => {
         logout();
     }
     // Console log to check if the user data is received
-    console.log("Logged in user:", user);
+    // console.log("Logged in user:", user);
     return (
         <div className='bg-white'>
             <div className='flex items-center justify-between mx-auto max-w-7xl h-16'>

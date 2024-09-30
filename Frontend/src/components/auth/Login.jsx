@@ -25,7 +25,7 @@ const Login = () => {
 
     const submitHandler = async (e) => {
         e.preventDefault();
-        console.log("Login data:", input); // Log the login data
+        // console.log("Login data:", input); // Log the login data
         const res = await login(input);
         if (res.success) {
             toast.success(res.msg);

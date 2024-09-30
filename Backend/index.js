@@ -9,6 +9,12 @@ import appRouter from './routes/routes.js'
 import companyrouter from './routes/companyroutes.js';
 import jobrouter from './routes/jobroutes.js';
 import applicationrouter from './routes/applicationroutes.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Create __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app=express();
 
@@ -17,7 +23,9 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
-app.use('/uploads', express.static('uploads'));
+// app.use('/uploads', express.static('uploads'));
+// Serve static files from the uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Ensure the path is correct
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(morgan("dev"));

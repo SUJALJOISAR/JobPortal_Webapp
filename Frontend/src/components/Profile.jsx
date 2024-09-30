@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import Navbar from './shared/Navbar'
 import { Avatar, AvatarImage } from './ui/avatar'
 import { Button } from './ui/button'
@@ -10,13 +10,15 @@ import AppliedJobTable from './AppliedJobTable'
 import UpdateProfileDialog from './UpdateProfileDialog'
 
 const Profile = () => {
-    const { user, logout } = useAuth();
+    const {user} = useAuth();
     const [open, setOpen] = useState(false);
     const isResume = true;
+    // console.log("User from Profile.jsx",user);
 
     // const skillsArray = user?.skills ? user.skills.split(',') : [];
     const skillsArray = Array.isArray(user?.skills) ? user.skills : (user?.skills ? user.skills.split(',') : []);
-    return (
+    console.log(user?.resume);
+     return (
         <div>
             <Navbar />
             <div className='max-w-4xl mx-auto bg-white border border-gray-200 rounded-2xl my-5 p-8'>
@@ -43,17 +45,17 @@ const Profile = () => {
                     </div>
                 </div>
                 <div className='my-5'>
-                    <h1>Skills</h1>
+                    <h1 className='font-bold'>Skills</h1>
                     <div className='flex items-center gap-1'>
                         {
-                            skillsArray.length !== 0 ? skillsArray.map((item, index) => <Badge key={index}>{item}</Badge>) : <span>NA</span>
+                            skillsArray.length !== 0 ? skillsArray.map((item, index) => <Badge key={index}>{item}</Badge>) : <span></span>
                         }
                     </div>
                 </div>
                 <div className='grid w-full max-w-sm items-center gap-1.5'>
                     <Label className="text-md font-bold">Resume</Label>
                     {
-                        isResume ? <a target='blank' href={user?.resume} className='text-blue-500 w-full hover:underline cursor-pointer'>{user?.resumeOriginalName}</a> : <span>NA</span>
+                        isResume ? <a target='_blank' href={`http://localhost:5000/uploads/${user?.resumeOriginalName}`} className='text-blue-500 w-full hover:underline cursor-pointer'>{user?.resumeOriginalName}</a> : <span>NA</span>
                     }
                 </div>
             </div>

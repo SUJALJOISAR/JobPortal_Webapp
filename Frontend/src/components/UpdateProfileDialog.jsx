@@ -46,9 +46,9 @@ const UpdateProfileDialog = ({open,setOpen}) => {
 
         try {
             setLoading(true);
-            console.log("updateDialogFormData:",formData);
+            // console.log("updateDialogFormData:",formData);
             const res=await axios.put('/user/updateProfile',formData);
-            console.log("Server response:", res.data);
+            // console.log("Server response:", res.data);
             if(res.data.success){
                 setUser(res.data.user); // Update user in AuthContext
                 toast.success(res.data.msg);
