@@ -1,13 +1,27 @@
-// import React from 'react'
+// import {useEffect} from 'react'
 import LatestJobCards from "./LatestJobCards"
+import { useJob } from './AuthContext/jobContext'
 
 const LatestJobs = () => {
+  const {jobs,loading}=useJob();
+
+  // useEffect(()=>{
+  //   fetchJobs();
+  // },[]);
+
+  if (loading) {
+    return <div>Loading jobs...</div>;
+  }
   return (
     <div>
        <div className='max-w-7xl mx-auto my-20'>
             <h1 className='text-4xl font-bold'><span className='text-[#6A38C2]'>Latest & Top </span> Job Openings</h1>
             <div className='grid grid-cols-3 gap-4 my-5'>
-                <LatestJobCards />
+               {
+                jobs.length === 0 ? <span>Jobs Not Found</span> : (
+                  jobs?.slice(0,6).map((job)=><LatestJobCards key={job._id} job={job}/>)
+                )
+               }
             </div>
     </div>
 </div>

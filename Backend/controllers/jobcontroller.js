@@ -46,6 +46,28 @@ export const postJob = async (req, res) => {
     // Connect to the database
     const db = await connectDatabase();
 
+    // Check if the user (recruiter) is associated with a company
+    const getCompanyQuery = `SELECT id FROM companies WHERE user_id = ?`;
+
+    db.query(getCompanyQuery, [userId], (err, companyResult) => {
+      if (err) {
+        console.error("Database query error:", err);
+        return res.status(500).json({
+          msg: "Database error while checking the company",
+          success: false,
+        });
+      }
+
+      // Check if the company exists for the recruiter
+      if (companyResult.length === 0) {
+        return res.status(400).json({
+          msg: "No company associated with this recruiter",
+          success: false,
+        });
+      }
+
+      const companyId = companyResult[0].id;
+
     // SQL query to insert the new job into the jobs table
     const postJobQuery = `
     INSERT INTO jobs (title, description, requirements, salary, experiencelevel, location, jobtype, position,company)
@@ -63,7 +85,7 @@ export const postJob = async (req, res) => {
         location,
         jobtype,
         position,
-        userId, //assuming that userId is company id
+        companyId,
       ],
       (err, result) => {
         if (err) {
@@ -90,18 +112,21 @@ export const postJob = async (req, res) => {
             location,
             jobtype,
             position,
-            user_id: userId, //Include the user Id who posted the job
+            company_id: companyId, // Include the company ID
+            user_id: userId, // Include the user ID who posted the job
+            created_at: createdAt, // Include the created_at timestamp
           },
         });
       }
     );
-  } catch (error) {
-    console.error("Server error:", error);
-    return res.status(500).json({
-      msg: "Server error",
-      success: false,
-    });
-  }
+  });
+} catch (error) {
+  console.error("Server error:", error);
+  return res.status(500).json({
+    msg: "Server error",
+    success: false,
+  });
+}
 };
 
 export const getAllJobs = async (req, res) => {
@@ -121,8 +146,12 @@ export const getAllJobs = async (req, res) => {
     //connect to database
     const db = await connectDatabase();
 
-    // Query to retrieve all jobs
-    let query = "SELECT * FROM jobs";
+     // Query to retrieve all jobs along with the associated company ID and name
+     let query = `
+     SELECT jobs.*, companies.id AS company_id, companies.name AS company_name 
+     FROM jobs 
+     INNER JOIN companies ON jobs.company = companies.id
+   `;
 
     let queryParams = [];
     if (keyword) {
@@ -147,6 +176,8 @@ export const getAllJobs = async (req, res) => {
           success: false,
         });
       }
+
+      console.log(result);
 
       // Return the list of all jobs
       return res.status(200).json({

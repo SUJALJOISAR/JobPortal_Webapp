@@ -1,33 +1,65 @@
-import React from 'react'
+import React,{useState,useEffect} from 'react'
 import { Badge } from './ui/badge'
 import { Button } from './ui/button'
+import PropTypes from 'prop-types'; // Importing PropTypes
+import { useParams } from 'react-router-dom';
+import { useJob } from './AuthContext/jobContext'; // Import the JobContext
+import Navbar from './shared/Navbar';
 
 const JobDescription = () => {
     const isApplied = true;
+    const { id } = useParams(); // Get job id from the URL
+    const { fetchJobById,fetchApplicants} = useJob(); // Destructure the fetchJobById from context
+    const [jobDetails, setJobDetails] = useState(null); // Store job details
+    const [applicantsCount, setApplicantsCount] = useState(0); // Store the total number of applicants
+
+    useEffect(()=>{
+        const fetchJobDetails = async ()=>{
+            const job=await fetchJobById(id);//Fetch job Details by ID
+            if(job){
+                setJobDetails(job);
+            }
+        };
+
+        const fetchTotalApplicants = async () => {
+            const count = await fetchApplicants(id);
+            setApplicantsCount(count);
+          };
+
+        fetchJobDetails();
+        fetchTotalApplicants();
+    },[id,fetchJobById,fetchApplicants]);
+
+    if (!jobDetails) {
+        return <div>Loading...</div>;
+    }
 
     return (
+        <div>
+        <Navbar/>
         <div className='max-w-7xl mx-auto my-10'>
             <div className='flex items-center justify-between'>
                 <div>
-                    <h1 className='font-bold text-xl'>Title</h1>
-                    <div className='flex items-center gap-2 mt-4'>Title</div>
-                    <Badge className={'text-blue-700 font-bold'} variant="ghost">Positions</Badge>
-                    <Badge className={'text-[#F83002] font-bold'} variant="ghost">JobType</Badge>
-                    <Badge className={'text-[#7209b7] font-bold'} variant="ghost">LPA</Badge>
+                <h1 className='font-bold text-xl'>{jobDetails.title}</h1>
+                    <div className='flex items-center gap-2 mt-4'>{jobDetails.company_name}</div>
+                    <Badge className={'text-blue-700 font-bold'} variant="ghost">{jobDetails.position}</Badge>
+                    <Badge className={'text-[#F83002] font-bold'} variant="ghost">{jobDetails.jobtype}</Badge>
+                    <Badge className={'text-[#7209b7] font-bold'} variant="ghost">{jobDetails.salary} LPA</Badge>
                 </div>
                 <Button disabled={isApplied} className={`rounded-lg ${isApplied ? 'bg-gray-600 cursor-not-allowed' : 'bg-[#7209b7] hover:bg-[#5f32ad]'}`}>{isApplied ? 'Already Applied' : 'Apply Now'}</Button>
             </div>
             <h1 className='border-b-2 border-b-gray-300 font-medium py-4'>Job Description</h1>
             <div className='my-4'>
-                <h1 className='font-bold my-1'>Role: <span className='pl-4 font-normal text-gray-800'>Gateway</span></h1>
-                <h1 className='font-bold my-1'>Location: <span className='pl-4 font-normal text-gray-800'>Ahemdabad</span></h1>
-                <h1 className='font-bold my-1'>Description: <span className='pl-4 font-normal text-gray-800'>This is Mern Stack Job</span></h1>
-                <h1 className='font-bold my-1'>Experience: <span className='pl-4 font-normal text-gray-800'>0 yrs</span></h1>
-                <h1 className='font-bold my-1'>Salary: <span className='pl-4 font-normal text-gray-800'>8 LPA</span></h1>
-                <h1 className='font-bold my-1'>Total Applicants: <span className='pl-4 font-normal text-gray-800'>1</span></h1>
-                <h1 className='font-bold my-1'>Posted Date: <span className='pl-4 font-normal text-gray-800'>27/10/2024</span></h1>
+            <h1 className='font-bold my-1'>Role: <span className='pl-4 font-normal text-gray-800'>{jobDetails.position}</span></h1>
+                <h1 className='font-bold my-1'>Location: <span className='pl-4 font-normal text-gray-800'>{jobDetails.location}</span></h1>
+                <h1 className='font-bold my-1'>Description: <span className='pl-4 font-normal text-gray-800'>{jobDetails.description}</span></h1>
+                <h1 className='font-bold my-1'>Experience: <span className='pl-4 font-normal text-gray-800'>{jobDetails.experiencelevel} yrs</span></h1>
+                <h1 className='font-bold my-1'>Salary: <span className='pl-4 font-normal text-gray-800'>{jobDetails.salary} LPA</span></h1>
+                <h1 className='font-bold my-1'>Total Applicants: <span className='pl-4 font-normal text-gray-800'>{applicantsCount}</span></h1>
+                <h1 className='font-bold my-1'>Posted Date: <span className='pl-4 font-normal text-gray-800'>{new Date(jobDetails.created_at).toLocaleDateString()}</span></h1>
             </div>
         </div>
+    </div>
     )
 }
 

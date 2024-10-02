@@ -271,7 +271,6 @@ export const updateProfile = async (req, res) => {
       // console.log("Cloudinary Upload Response:", cloudResponse); // Add this line
 
        // File handling (no Cloudinary, store locally)
-       // File handling (no Cloudinary, store locally)
       if (file) {
         const filePath = join(__dirname, 'uploads', file.originalname); // Store file path
         user.resume = filePath; // Save the local file path
