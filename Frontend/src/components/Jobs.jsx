@@ -5,7 +5,7 @@ import { useJob } from "./AuthContext/jobContext";
 import { useAuth } from "./AuthContext/authContext"; // Import the Auth context
 
 const Jobs = () => {
-  const { jobs, loading } = useJob();
+  const { jobs } = useJob();
   const { user } = useAuth(); // Get the current user from Auth context
 
   if (!user) {

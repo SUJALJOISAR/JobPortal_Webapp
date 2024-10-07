@@ -114,7 +114,7 @@ export const postJob = async (req, res) => {
             position,
             company_id: companyId, // Include the company ID
             user_id: userId, // Include the user ID who posted the job
-            created_at: createdAt, // Include the created_at timestamp
+            created_at: new Date().toISOString(), // Provide the created_at timestamp
           },
         });
       }
@@ -177,7 +177,7 @@ export const getAllJobs = async (req, res) => {
         });
       }
 
-      console.log(result);
+      // console.log(result);
 
       // Return the list of all jobs
       return res.status(200).json({
@@ -309,3 +309,47 @@ export const getAdminJobs=async (req,res)=>{
     });
     }
 }
+
+export const hasUserApplied = async (req, res) => {
+  try {
+      const userId = req.user.id;  // The logged-in user's ID
+      const jobId = req.params.id;  // The job ID from the request parameters
+
+      // Connect to the database
+      const db = await connectDatabase();
+
+      // Correct query using 'applicant' instead of 'user_id'
+      const query = "SELECT * FROM applications WHERE applicant = ? AND job = ?";
+      db.query(query, [userId, jobId], (err, result) => {
+          if (err) {
+              console.error("Database query error:", err);
+              return res.status(500).json({
+                  msg: "Database query error",
+                  success: false,
+              });
+          }
+
+          // If the user has applied, return true
+          if (result.length > 0) {
+              return res.status(200).json({
+                  msg: "User has already applied",
+                  success: true,
+                  hasApplied: true,  // Return true if applied
+              });
+          }
+
+          // If the user hasn't applied
+          return res.status(200).json({
+              msg: "User has not applied yet",
+              success: true,
+              hasApplied: false,  // Return false if not applied
+          });
+      });
+  } catch (error) {
+      console.error("Server error:", error);
+      return res.status(500).json({
+          msg: "Server error",
+          success: false,
+      });
+  }
+};

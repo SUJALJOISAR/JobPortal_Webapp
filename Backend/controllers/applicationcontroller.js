@@ -179,9 +179,10 @@ export const getApplicants = async (req, res) => {
 
       // If no students have applied
       if (result[0].studentCount === 0) {
-        return res.status(404).json({
+        return res.status(200).json({
           message: "No students have applied for this job",
-          success: false,
+          success: true, // Return success even if no applicants
+          studentCount: 0, // Return 0 applicants
         });
       }
 
