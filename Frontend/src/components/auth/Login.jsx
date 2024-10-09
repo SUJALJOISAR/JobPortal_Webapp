@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import Navbar from "../shared/Navbar";
 import { RadioGroup } from '../ui/radio-group';
 import { Button } from '../ui/button';
@@ -12,12 +12,21 @@ import { useAuth } from '../AuthContext/authContext';
 import { Loader2 } from 'lucide-react';
 
 const Login = () => {
-    const {loading,login}=useAuth();
+    const { loading, login,user } = useAuth();
+    const navigate = useNavigate();
     const [input, setInput] = useState({
         email: "",
         password: "",
         role: "",
     });
+
+     // Check if token exists in localStorage on component mount
+     useEffect(() => {
+        // If user is already logged in (token exists), redirect to home
+        if (user) {
+            navigate('/');
+        }
+    }, [user, navigate]);
 
     const changeEventHandler = (e) => {
         setInput({ ...input, [e.target.name]: e.target.value });
@@ -28,14 +37,14 @@ const Login = () => {
         // console.log("Login data:", input); // Log the login data
         const res = await login(input);
         if (res.success) {
+            // Save the token in localStorage
+            localStorage.setItem('token', res.user.token);
             toast.success(res.msg);
             navigate('/'); // Navigate to the homepage on success
         } else {
             toast.error(res.msg); // Show error message
         }
     };
-
-    const navigate = useNavigate();
 
     return (
         <div>

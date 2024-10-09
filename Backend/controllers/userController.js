@@ -156,14 +156,16 @@ export const login = async (req, res) => {
         { expiresIn: "1d" }
       );
 
+      console.log("Setting cookie:", token);
       res.cookie(process.env.COOKIE_NAME, token, {
         path: "/",
         httpOnly: true,
         secure: true,
         signed: true,
-        sameSite: "none",
+        sameSite:'None',
         maxAge: 24 * 60 * 60 * 1000, // 1 day
-      });
+    });
+    console.log("Cookie set successfully");
 
       // Successful login response
       return res.status(200).json({
@@ -180,6 +182,7 @@ export const login = async (req, res) => {
           resume: user.resume,
           resumeOriginalName: user.resumeOriginalName,
           profilePhoto: user.profilePhoto, // Make sure this is included
+          token
         },
       });
     });
@@ -333,6 +336,56 @@ export const updateProfile = async (req, res) => {
     });
   } catch (error) {
     console.error("Server error:", error); // Log the error details
+    return res.status(500).json({
+      msg: "Server error",
+      success: false,
+    });
+  }
+};
+
+// Get the profile of the authenticated user
+export const getUserProfile = async (req, res) => {
+  try {
+    const userId = req.user.id; // Extract user ID from the JWT token
+
+    const db = await connectDatabase();
+
+    // Fetch the user from the database
+    const sql = "SELECT id, name, email, phone, bio, skills, resume, resumeOriginalName, profilePhoto, role FROM users WHERE id = ?";
+    db.query(sql, [userId], (err, result) => {
+      if (err) {
+        return res.status(500).json({
+          msg: "Database query error",
+          success: false,
+        });
+      }
+
+      if (result.length === 0) {
+        return res.status(404).json({
+          msg: "User not found",
+          success: false,
+        });
+      }
+
+      const user = result[0];
+      return res.status(200).json({
+        success: true,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          bio: user.bio,
+          skills: user.skills.split(","), // Convert skills string back to an array
+          resume: user.resume,
+          resumeOriginalName: user.resumeOriginalName,
+          profilePhoto: user.profilePhoto,
+          role: user.role,
+        },
+      });
+    });
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
     return res.status(500).json({
       msg: "Server error",
       success: false,
