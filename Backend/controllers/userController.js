@@ -342,7 +342,6 @@ export const updateProfile = async (req, res) => {
     });
   }
 };
-
 // Get the profile of the authenticated user
 export const getUserProfile = async (req, res) => {
   try {
@@ -376,7 +375,7 @@ export const getUserProfile = async (req, res) => {
           email: user.email,
           phone: user.phone,
           bio: user.bio,
-          skills: user.skills.split(","), // Convert skills string back to an array
+          skills: user.skills ? user.skills.split(",") : [], // Handle null or undefined skills
           resume: user.resume,
           resumeOriginalName: user.resumeOriginalName,
           profilePhoto: user.profilePhoto,

@@ -1,4 +1,10 @@
 import { connectDatabase } from "../db/connection.js";
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+// Create __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export const registerCompany = async (req, res) => {
   try {
@@ -204,15 +210,26 @@ export const updatecompany = async (req, res) => {
           success: false,
         });
       }
+
+      // Retrieve the existing company
+      const company = result[0];
+
+      // Handle file upload (local storage)
+      let logoPath = company.logo; // Keep the existing logo path
+      if (file) {
+        logoPath = file.originalname; // Use the new logo file name
+        const filePath = join(__dirname, 'uploads', logoPath); // Create file path
+      }
+
       // Company exists and belongs to the user, proceed with the update
       const updateCompanyQuery = `
       UPDATE companies 
-      SET name = ?, description = ?, website = ?, location = ?
+      SET name = ?, description = ?, website = ?, location = ?,logo =?
       WHERE id = ? AND user_id = ?
     `;
       db.query(
         updateCompanyQuery,
-        [name, description, website, location, companyId, userId],
+        [name, description, website, location, logoPath,companyId, userId],
         (err, result) => {
           if (err) {
             console.error("Database update error:", err);
@@ -229,30 +246,33 @@ export const updatecompany = async (req, res) => {
             });
           }
 
-          console.log("Updated company",result);
+          console.log("Updated company", result);
 
-         // Fetch the updated company details after the update
-         const getUpdatedCompanyQuery = "SELECT * FROM companies WHERE id = ?";
-         db.query(getUpdatedCompanyQuery, [companyId], (err, updatedCompany) => {
-           if (err) {
-             console.error("Error fetching updated company:", err);
-             return res.status(500).json({
-               msg: "Error fetching updated company details",
-               success: false,
-             });
-           }
+          // Fetch the updated company details after the update
+          const getUpdatedCompanyQuery = "SELECT * FROM companies WHERE id = ?";
+          db.query(
+            getUpdatedCompanyQuery,
+            [companyId],
+            (err, updatedCompany) => {
+              if (err) {
+                console.error("Error fetching updated company:", err);
+                return res.status(500).json({
+                  msg: "Error fetching updated company details",
+                  success: false,
+                });
+              }
 
-           // Return the updated company details
-           return res.status(200).json({
-             msg: "Company updated successfully",
-             success: true,
-             company: updatedCompany[0], // Return the first (and only) result
-           });
-         });
-       }
-     );
-   });
-
+              // Return the updated company details
+              return res.status(200).json({
+                msg: "Company updated successfully",
+                success: true,
+                company: updatedCompany[0], // Return the first (and only) result
+              });
+            }
+          );
+        }
+      );
+    });
   } catch (error) {
     console.log("Server error:", error);
     return res.status(500).json({

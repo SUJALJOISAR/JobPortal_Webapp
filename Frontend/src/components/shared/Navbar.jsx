@@ -28,9 +28,19 @@ const Navbar = () => {
                 </div>
                 <div className='flex itmes-center gap-12'>
                     <ul className='flex font-semibold items-center gap-5'>
-                        <Link to="/"><li>Home</li></Link>
-                        <Link to="/jobs"><li>Jobs</li></Link>
-                        <Link to="/browse"><li>Browse</li></Link>
+                          {/* Conditional rendering based on role */}
+                          {user?.role === 'student' ? (
+                            <>
+                                <Link to="/"><li>Home</li></Link>
+                                <Link to="/jobs"><li>Jobs</li></Link>
+                                <Link to="/browse"><li>Browse</li></Link>
+                            </>
+                        ) : user?.role === 'recruiter' ? (
+                            <>
+                                <Link to="/admin/companies"><li>Companies</li></Link>
+                                <Link to="/admin/jobs"><li>Jobs</li></Link>
+                            </>
+                        ) : null}
                     </ul>
                     {
                         !user ? (
@@ -69,8 +79,17 @@ const Navbar = () => {
                                     </div>
                                     <div className='flex flex-col my-2 text-gray-600'>
                                         <div className='flex w-fit items-center gap-2 cursor-pointer'>
-                                            <User2 />
-                                            <Button variant="link"><span className='from-neutral-600'><Link to="/profile">View Profile</Link></span></Button>
+                                           {/* Conditionally show "View Profile" button for students only */}
+                                        {user?.role === 'student' && (
+                                            <div className='flex w-fit items-center gap-2 cursor-pointer'>
+                                                <User2 />
+                                                <Button variant="link">
+                                                    <span className='from-neutral-600'>
+                                                        <Link to="/profile">View Profile</Link>
+                                                    </span>
+                                                </Button>
+                                            </div>
+                                        )}
                                         </div>
                                         <div className='flex w-fit items-center gap-2 cursor-pointer' onClick={handleLogout}>
                                             <LogOut />
