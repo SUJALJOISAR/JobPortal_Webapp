@@ -77,6 +77,8 @@ export const getCompany = async (req, res) => {
   try {
     //see whenever the user logged in then whichever company creates will be only shown
     const userId = req.user.id;
+    const {name}=req.query;//Get the name from the query parameter
+
     if (!userId) {
       return res.status(401).json({
         msg: "User not authenticated",
@@ -90,8 +92,15 @@ export const getCompany = async (req, res) => {
     const db = await connectDatabase();
 
     //query to get companies created by logged-in user
-    const query = "SELECT * FROM companies WHERE user_id = ?";
-    db.query(query, [userId], (err, result) => {
+    let query = "SELECT * FROM companies WHERE user_id = ?";
+    let queryParams=[userId];
+
+    if(name){
+      query += " AND name LIKE ?"
+      queryParams.push(`%${name}%`);
+    }
+
+    db.query(query,queryParams, (err, result) => {
       if (err) {
         console.error("Database query error:", err); // Log the error
         return res.status(500).json({

@@ -12,8 +12,8 @@ const Companies = () => {
     const { companies, getCompanies, loading } = useCompanyContext();
 
     useEffect(() => {
-        getCompanies(); // Fetch companies when the component mounts
-      }, []);
+        getCompanies(input); // Fetch companies when the component mounts
+      }, [input]);
 
   return (
     <div>

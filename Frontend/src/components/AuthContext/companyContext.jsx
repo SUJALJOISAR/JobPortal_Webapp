@@ -34,10 +34,10 @@ export const CompanyProvider = ({ children }) => {
   };
 
   // Get all companies for logged-in user
-  const getCompanies = async () => {
+  const getCompanies = async (filterName = " ") => {
     try {
       setLoading(true);
-      const response = await axios.get("/company/getcompany");
+      const response = await axios.get("/company/getcompany",{params:{name:filterName}});//pass the filter name in the query params
       if (response.status === 200) {
         setCompanies(response.data.companies);
       } else {
@@ -75,7 +75,7 @@ export const CompanyProvider = ({ children }) => {
       const response = await axios.put(`/company/updatecompany/${companyId}`, companyData);
       if (response.status === 200) {
         toast.success("Company updated successfully");
-        navigate(`/admin/companies/${companyId}`); // Redirect after successful update
+        navigate(`/admin/companies`); // Redirect after successful update
       } else {
         toast.error("Failed to update company.");
       }
