@@ -68,65 +68,65 @@ export const postJob = async (req, res) => {
 
       const companyId = companyResult[0].id;
 
-    // SQL query to insert the new job into the jobs table
-    const postJobQuery = `
+      // SQL query to insert the new job into the jobs table
+      const postJobQuery = `
     INSERT INTO jobs (title, description, requirements, salary, experiencelevel, location, jobtype, position,company)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)
   `;
 
-    db.query(
-      postJobQuery,
-      [
-        title,
-        description,
-        requirements,
-        salary,
-        experiencelevel,
-        location,
-        jobtype,
-        position,
-        companyId,
-      ],
-      (err, result) => {
-        if (err) {
-          console.error("Database insert error:", err);
-          return res.status(500).json({
-            msg: "Database error while posting the job",
-            success: false,
+      db.query(
+        postJobQuery,
+        [
+          title,
+          description,
+          requirements,
+          salary,
+          experiencelevel,
+          location,
+          jobtype,
+          position,
+          companyId,
+        ],
+        (err, result) => {
+          if (err) {
+            console.error("Database insert error:", err);
+            return res.status(500).json({
+              msg: "Database error while posting the job",
+              success: false,
+            });
+          }
+
+          const jobId = result.insertId; // Return the ID of the newly inserted job
+
+          // If job posting is successful, return a success response
+          return res.status(201).json({
+            msg: "Job posted successfully",
+            success: true,
+            job: {
+              id: jobId,
+              title,
+              description,
+              requirements,
+              salary,
+              experiencelevel,
+              location,
+              jobtype,
+              position,
+              company_id: companyId, // Include the company ID
+              user_id: userId, // Include the user ID who posted the job
+              created_at: new Date().toISOString(), // Provide the created_at timestamp
+            },
           });
         }
-
-        const jobId = result.insertId; // Return the ID of the newly inserted job
-
-        // If job posting is successful, return a success response
-        return res.status(201).json({
-          msg: "Job posted successfully",
-          success: true,
-          job: {
-            id: jobId,
-            title,
-            description,
-            requirements,
-            salary,
-            experiencelevel,
-            location,
-            jobtype,
-            position,
-            company_id: companyId, // Include the company ID
-            user_id: userId, // Include the user ID who posted the job
-            created_at: new Date().toISOString(), // Provide the created_at timestamp
-          },
-        });
-      }
-    );
-  });
-} catch (error) {
-  console.error("Server error:", error);
-  return res.status(500).json({
-    msg: "Server error",
-    success: false,
-  });
-}
+      );
+    });
+  } catch (error) {
+    console.error("Server error:", error);
+    return res.status(500).json({
+      msg: "Server error",
+      success: false,
+    });
+  }
 };
 
 export const getAllJobs = async (req, res) => {
@@ -146,8 +146,8 @@ export const getAllJobs = async (req, res) => {
     //connect to database
     const db = await connectDatabase();
 
-     // Query to retrieve all jobs along with the associated company ID and name
-     let query = `
+    // Query to retrieve all jobs along with the associated company ID and name
+    let query = `
      SELECT jobs.*, companies.id AS company_id, companies.name AS company_name 
      FROM jobs 
      INNER JOIN companies ON jobs.company = companies.id
@@ -231,8 +231,8 @@ export const getJobById = async (req, res) => {
         });
       }
 
-       // Return the job details
-       return res.status(200).json({
+      // Return the job details
+      return res.status(200).json({
         msg: "Job retrieved successfully",
         success: true,
         job: result[0], // Send back the retrieved job
@@ -248,44 +248,49 @@ export const getJobById = async (req, res) => {
 };
 
 //this is for seeing the admin that how many jobs are created by him
-export const getAdminJobs=async (req,res)=>{
-    try {
-        const userId=req.user.id;//extract it from token
-        const userRole=req.user.role;//extract it from token
+export const getAdminJobs = async (req, res) => {
+  try {
+    const userId = req.user.id; //extract it from token
+    const userRole = req.user.role; //extract it from token
 
-        // Check if the user is authenticated
+    // Check if the user is authenticated
     if (!userId) {
-        return res.status(401).json({
-          msg: "User not authenticated",
+      return res.status(401).json({
+        msg: "User not authenticated",
+        success: false,
+      });
+    }
+
+    // Check if the user is a recruiter
+    if (userRole !== "recruiter") {
+      return res.status(403).json({
+        msg: "Access denied: Only recruiters can access this resource",
+        success: false,
+      });
+    }
+
+    //connect to database
+    const db = await connectDatabase();
+
+    // Query to retrieve all jobs created by the authenticated recruiter
+    const query = `
+      SELECT jobs.*, companies.name AS company_name 
+      FROM jobs 
+      JOIN companies ON jobs.company = companies.id 
+      WHERE companies.user_id = ?
+    `;
+    
+    //execute the query
+    db.query(query, [userId], (err, result) => {
+      if (err) {
+        console.error("Database query error:", err);
+        return res.status(500).json({
+          msg: "Database query error",
           success: false,
         });
       }
 
-       // Check if the user is a recruiter
-    if (userRole !== 'recruiter') {
-        return res.status(403).json({
-          msg: "Access denied: Only recruiters can access this resource",
-          success: false,
-        });
-      }
-
-      //connect to database
-      const db=await connectDatabase();
-
-      //query to retreive all jobs created by the authenticated recruiter
-      const query = "SELECT * FROM jobs where company=?"; //assuming company as userId because relationship is set
-
-      //execute the query
-      db.query(query,[userId],(err,result)=>{
-        if (err) {
-            console.error("Database query error:", err);
-            return res.status(500).json({
-              msg: "Database query error",
-              success: false,
-            });
-          }
-
-          // If no jobs are found
+      // If no jobs are found
       if (result.length === 0) {
         return res.status(404).json({
           msg: "No jobs found for this recruiter",
@@ -300,56 +305,55 @@ export const getAdminJobs=async (req,res)=>{
         jobs: result, // Send back the retrieved jobs
       });
     });
-
-    } catch (error) {
-        console.error("Server error:", error);
+  } catch (error) {
+    console.error("Server error:", error);
     return res.status(500).json({
       msg: "Server error",
       success: false,
     });
-    }
-}
+  }
+};
 
 export const hasUserApplied = async (req, res) => {
   try {
-      const userId = req.user.id;  // The logged-in user's ID
-      const jobId = req.params.id;  // The job ID from the request parameters
+    const userId = req.user.id; // The logged-in user's ID
+    const jobId = req.params.id; // The job ID from the request parameters
 
-      // Connect to the database
-      const db = await connectDatabase();
+    // Connect to the database
+    const db = await connectDatabase();
 
-      // Correct query using 'applicant' instead of 'user_id'
-      const query = "SELECT * FROM applications WHERE applicant = ? AND job = ?";
-      db.query(query, [userId, jobId], (err, result) => {
-          if (err) {
-              console.error("Database query error:", err);
-              return res.status(500).json({
-                  msg: "Database query error",
-                  success: false,
-              });
-          }
-
-          // If the user has applied, return true
-          if (result.length > 0) {
-              return res.status(200).json({
-                  msg: "User has already applied",
-                  success: true,
-                  hasApplied: true,  // Return true if applied
-              });
-          }
-
-          // If the user hasn't applied
-          return res.status(200).json({
-              msg: "User has not applied yet",
-              success: true,
-              hasApplied: false,  // Return false if not applied
-          });
-      });
-  } catch (error) {
-      console.error("Server error:", error);
-      return res.status(500).json({
-          msg: "Server error",
+    // Correct query using 'applicant' instead of 'user_id'
+    const query = "SELECT * FROM applications WHERE applicant = ? AND job = ?";
+    db.query(query, [userId, jobId], (err, result) => {
+      if (err) {
+        console.error("Database query error:", err);
+        return res.status(500).json({
+          msg: "Database query error",
           success: false,
+        });
+      }
+
+      // If the user has applied, return true
+      if (result.length > 0) {
+        return res.status(200).json({
+          msg: "User has already applied",
+          success: true,
+          hasApplied: true, // Return true if applied
+        });
+      }
+
+      // If the user hasn't applied
+      return res.status(200).json({
+        msg: "User has not applied yet",
+        success: true,
+        hasApplied: false, // Return false if not applied
       });
+    });
+  } catch (error) {
+    console.error("Server error:", error);
+    return res.status(500).json({
+      msg: "Server error",
+      success: false,
+    });
   }
 };

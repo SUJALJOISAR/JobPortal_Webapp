@@ -2,6 +2,7 @@ import { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import PropTypes from 'prop-types';
+import { useAuth } from './authContext';
 
 //create the Job Context
 const JobContext = createContext();
@@ -10,6 +11,27 @@ const JobContext = createContext();
 export const JobProvider = ({ children }) => {
     const [jobs, setJobs] = useState([]);//Hold the Fetched Jobs
     const [loading, setLoading] = useState(false);
+    const {user,loading:authLoading}=useAuth();
+
+    const postJob = async (jobData) => {
+        try {
+          setLoading(true);
+          const response = await axios.post("/job/postjob", jobData);
+          if (response.status === 201) {
+            toast.success("Job posted successfully");
+          } else {
+            toast.error("Failed to post job.");
+          }
+        } catch (error) {
+          if (error.response && error.response.data) {
+            toast.error(error.response.data.msg || "An error occurred.");
+          } else {
+            toast.error("Network error. Please try again.");
+          }
+        } finally {
+          setLoading(false);
+        }
+      };
 
     const fetchJobs = async () => {
         setLoading(true);
@@ -31,10 +53,36 @@ export const JobProvider = ({ children }) => {
         }
     }
 
-    //     // Optionally, fetch jobs when the component mounts
+    // Fetch jobs created by the logged-in admin (recruiter)
+    const fetchAdminJobs = async () => {
+        setLoading(true);
+        try {
+            const res = await axios.get('/job/getadminjobs'); // Assuming this is the endpoint for admin jobs
+            if (res.data.success) {
+                setJobs(res.data.jobs); // Store admin-specific jobs in the context
+                toast.success("Admin Jobs Loaded Successfully");
+            } else {
+                toast.error("No Jobs Found for Admin");
+            }
+        } catch (error) {
+            console.error("Error fetching admin jobs:", error);
+            toast.error("Error fetching admin jobs.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        fetchJobs();
-    }, [])
+        // Wait until the auth loading is done
+        if (!authLoading) {
+            // Fetch jobs depending on the user's role
+            if (user?.role === 'recruiter') {
+                fetchAdminJobs();
+            } else {
+                fetchJobs();
+            }
+        }
+    }, [authLoading, user]);
     // Fetch jobs when the context is first used (like componentDidMount)
 
     // Fetch job by ID
@@ -108,7 +156,7 @@ export const JobProvider = ({ children }) => {
 
 
     return (
-        <JobContext.Provider value={{ jobs, fetchJobs, fetchJobById, fetchApplicants, checkUserApplication, applyForJob,loading }}>
+        <JobContext.Provider value={{ jobs,postJob, fetchJobs, fetchJobById, fetchApplicants, checkUserApplication, applyForJob,fetchAdminJobs,loading }}>
             {children}
         </JobContext.Provider>
     )

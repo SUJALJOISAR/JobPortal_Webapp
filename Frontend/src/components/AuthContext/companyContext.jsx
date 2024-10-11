@@ -37,7 +37,12 @@ export const CompanyProvider = ({ children }) => {
   const getCompanies = async (filterName = " ") => {
     try {
       setLoading(true);
-      const response = await axios.get("/company/getcompany",{params:{name:filterName}});//pass the filter name in the query params
+      // Check if filterName is provided, if not, just omit it from the params
+      const trimmedFilter = filterName.trim();
+      const response = await axios.get("/company/getcompany", {
+        params: trimmedFilter ? { name: trimmedFilter } : {}, // Pass params only if filterName exists
+      });
+  //pass the filter name in the query params
       if (response.status === 200) {
         setCompanies(response.data.companies);
       } else {
