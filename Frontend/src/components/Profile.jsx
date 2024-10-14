@@ -17,7 +17,7 @@ const Profile = () => {
 
     // const skillsArray = user?.skills ? user.skills.split(',') : [];
     const skillsArray = Array.isArray(user?.skills) ? user.skills : (user?.skills ? user.skills.split(',') : []);
-    console.log(user?.resume);
+    // console.log(user?.resume);
      return (
         <div>
             <Navbar />

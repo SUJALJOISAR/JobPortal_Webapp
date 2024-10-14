@@ -163,7 +163,7 @@ export const getApplicants = async (req, res) => {
     // Query to get all student applicants and their details
     const query = `
       SELECT users.name, users.email, users.phone, users.resume AS resume, users.resumeOriginalName AS resumeOriginalName, 
-             applications.created_at AS createdAt
+             applications.id AS applicantId,applications.created_at AS createdAt
       FROM applications
       INNER JOIN users ON applications.applicant = users.id
       WHERE applications.job = ? AND users.role = 'student';
@@ -207,11 +207,11 @@ export const getApplicants = async (req, res) => {
 
 export const updateStatus = (req, res) => {
   try {
-    const { newStatus } = req.body;
+    const { status } = req.body;
     const applicationId = req.params.id;
 
     // Ensure both applicationId and newStatus are provided
-    if (!applicationId || !newStatus) {
+    if (!applicationId || !status) {
       return res.status(400).json({
         msg: "Application ID and new status are required",
         success: false,
@@ -226,7 +226,7 @@ export const updateStatus = (req, res) => {
 
         db.query(
           updateQuery,
-          [newStatus, applicationId],
+          [status, applicationId],
           (err, updateResult) => {
             if (err) {
               console.error("Database update error:", err);
