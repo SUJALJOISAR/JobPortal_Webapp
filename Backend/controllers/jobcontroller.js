@@ -144,7 +144,7 @@ export const getAllJobs = async (req, res) => {
     }
 
     //Retrieve the keyword from query params like /api/job/getalljobs?keyword="developer"
-    const { keyword } = req.query;
+    const { keyword,Location,Industry,Salary } = req.query;
 
     //connect to database
     const db = await connectDatabase();
@@ -158,10 +158,28 @@ export const getAllJobs = async (req, res) => {
 
     let queryParams = [];
     if (keyword) {
-      query += " WHERE title LIKE ? OR description LIKE ?";
+      query += " WHERE LOWER(jobs.title) LIKE LOWER(?) OR LOWER(jobs.description) LIKE LOWER(?)";
       let keywordSearch = `%${keyword}%`; //Add '%' to search for partial matches
       queryParams.push(keywordSearch, keywordSearch); //here keywordsearch for title and description columns individually
     }
+
+      // Apply location filter
+      if (Location) {
+        query += " AND jobs.location = ?";
+        queryParams.push(Location);
+      }
+  
+      // Apply industry filter
+      if (Industry) {
+        query += " AND companies.name = ?";
+        queryParams.push(Industry);
+      }
+  
+      // Apply salary filter
+      if (Salary) {
+        query += " AND jobs.salary = ?";
+        queryParams.push(Salary);
+      }
 
     db.query(query, queryParams, (err, result) => {
       if (err) {

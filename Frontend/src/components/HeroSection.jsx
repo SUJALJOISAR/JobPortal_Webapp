@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from './ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 
 const HeroSection = () => {
     const navigate = useNavigate();
+    const [search, setSearch] = useState('');
+    
 
     const searchJobHandler = () => {
-        // Implement your search logic here
+        //Navigate to the Browse page with search term as a query parameter
+        navigate(`/browse?keyword=${encodeURIComponent(search)}`);
     };
 
     return (
@@ -27,6 +30,8 @@ const HeroSection = () => {
                         type="text"
                         placeholder='Search for your ideal job'
                         className='outline-none border-none w-full'
+                        value={search}
+                        onChange={(e)=>setSearch(e.target.value)}
                     />
                     <Button onClick={searchJobHandler} className="rounded-r-full bg-[#6A38C2]">
                         <Search className='h-5 w-5' />

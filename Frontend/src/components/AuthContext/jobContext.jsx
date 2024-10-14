@@ -158,7 +158,7 @@ export const JobProvider = ({ children }) => {
 
 
     return (
-        <JobContext.Provider value={{ jobs,postJob, fetchJobs, fetchJobById, fetchApplicants, checkUserApplication, applyForJob,fetchAdminJobs,loading }}>
+        <JobContext.Provider value={{ jobs,setJobs,postJob, fetchJobs, fetchJobById, fetchApplicants, checkUserApplication, applyForJob,fetchAdminJobs,loading }}>
             {children}
         </JobContext.Provider>
     )
