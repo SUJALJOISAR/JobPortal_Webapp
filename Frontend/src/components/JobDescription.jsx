@@ -40,7 +40,9 @@ const JobDescription = () => {
     const handleApply = async () => {
         const success = await applyForJob(id); // Apply for the job
         if (success) {
-            setIsApplied(true); // Update the state if the application is successful
+            const updatedCount = await fetchApplicants(id); // Fetch the updated applicants count
+            setApplicantsCount(updatedCount); // Set the new count of applicants
+            setIsApplied(true); // Update the state to reflect that the user has applied
         }
     };
 

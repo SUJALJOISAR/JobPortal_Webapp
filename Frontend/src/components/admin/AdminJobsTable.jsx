@@ -1,7 +1,7 @@
 // import React from 'react'
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Edit2, MoreHorizontal } from "lucide-react";
+import { Edit2, MoreHorizontal,Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useJob } from "../AuthContext/jobContext";
 import PropTypes from 'prop-types'; // Import PropTypes
@@ -30,7 +30,7 @@ const AdminJobsTable = ({filter}) => {
                         <TableRow>
                             <TableHead>Job Title</TableHead>
                             <TableHead>Company Name</TableHead>
-                            <TableHead>Position</TableHead>
+                            <TableHead>No of Position</TableHead>
                             <TableHead>Location</TableHead>
                             <TableHead>Salary</TableHead>
                             <TableHead>Job Type</TableHead>
@@ -54,9 +54,13 @@ const AdminJobsTable = ({filter}) => {
                                             <MoreHorizontal />
                                         </PopoverTrigger>
                                         <PopoverContent className="w-32">
-                                            <div onClick={() => navigate(`/admin/jobs/${job.id}`)} className="flex items-center gap-2 w-fit cursor-pointer">
+                                            <div onClick={() => navigate(`/admin/jobs/update/${job.id}`)} className="flex items-center gap-2 w-fit cursor-pointer">
                                                 <Edit2 className="w-4" />
                                                 <span>Edit</span>
+                                            </div>
+                                            <div onClick={()=> navigate(`/admin/jobs/${job.id}/applicants`)} className='flex items-center w-fit gap-2 cursor-pointer mt-2'>
+                                                <Eye className='w-4'/>
+                                                <span>Applicants</span>
                                             </div>
                                         </PopoverContent>
                                     </Popover>

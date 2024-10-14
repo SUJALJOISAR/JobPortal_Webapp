@@ -33,29 +33,34 @@ export const CompanyProvider = ({ children }) => {
     }
   };
 
-  // Get all companies for logged-in user
-  const getCompanies = async (filterName = " ") => {
+  const getCompanies = async (filterName = "") => {
     try {
-      setLoading(true);
-      // Check if filterName is provided, if not, just omit it from the params
-      const trimmedFilter = filterName.trim();
-      const response = await axios.get("/company/getcompany", {
-        params: trimmedFilter ? { name: trimmedFilter } : {}, // Pass params only if filterName exists
-      });
-  //pass the filter name in the query params
-      if (response.status === 200) {
-        setCompanies(response.data.companies);
-      } else {
-        toast.error("Failed to fetch companies.");
-      }
+        setLoading(true);
+        const trimmedFilter = filterName.trim();
+        const response = await axios.get("/company/getcompany", {
+            params: trimmedFilter ? { name: trimmedFilter } : {},
+        });
+        
+        if (response.status === 200) {
+            console.log("Fetched Companies:", response.data.companies); // Log the companies array
+            // Check if companies array exists and is not empty
+            if (response.data.companies && Array.isArray(response.data.companies)) {
+                setCompanies(response.data.companies);
+            } else {
+                console.error("Invalid companies data:", response.data.companies);
+            }
+        } else {
+            toast.error("Failed to fetch companies.");
+        }
     } catch (error) {
         if (error.response && error.response.data) {
-         toast.error(error.response.data.message || "An error occurred.");
+            toast.error(error.response.data.message || "An error occurred.");
         }
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
+
 
   // Get company by ID
   const getCompanyById = async (companyId) => {

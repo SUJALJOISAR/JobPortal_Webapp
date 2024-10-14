@@ -160,13 +160,14 @@ export const getApplicants = async (req, res) => {
 
     // Connect to the database
     const db = await connectDatabase();
-    // Query to get all student applicants for a specific job
+    // Query to get all student applicants and their details
     const query = `
-  SELECT COUNT(applications.id) AS studentCount
-  FROM applications
-  INNER JOIN users ON applications.applicant = users.id
-  WHERE applications.job = ? AND users.role = 'student';
-`;
+      SELECT users.name, users.email, users.phone, users.resume AS resume, users.resumeOriginalName AS resumeOriginalName, 
+             applications.created_at AS createdAt
+      FROM applications
+      INNER JOIN users ON applications.applicant = users.id
+      WHERE applications.job = ? AND users.role = 'student';
+    `;
 
     db.query(query, [jobId], (err, result) => {
       if (err) {
@@ -178,11 +179,12 @@ export const getApplicants = async (req, res) => {
       }
 
       // If no students have applied
-      if (result[0].studentCount === 0) {
+      if (result.length === 0) {
         return res.status(200).json({
           message: "No students have applied for this job",
           success: true, // Return success even if no applicants
           studentCount: 0, // Return 0 applicants
+          applications: [], // Return empty applications array
         });
       }
 
@@ -190,7 +192,8 @@ export const getApplicants = async (req, res) => {
       return res.status(200).json({
         message: "Applicants retrieved successfully",
         success: true,
-        studentCount: result[0].studentCount, // Send back the count of students
+        studentCount: result.length, // Send back the count of students
+        applications: result, // Return the applicant details
       });
     });
   } catch (error) {

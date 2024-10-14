@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from '../shared/Navbar';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
-import { toast } from 'sonner';
+// import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useJob } from '../AuthContext/jobContext';
@@ -19,9 +19,10 @@ const PostJob = () => {
         location: "",
         jobtype: "",
         experiencelevel: "",
-        position: "", // Changed to string
-        companyId: ""
+        position: 0,
+        companyId: "",
     });
+
     const { companies, getCompanies } = useCompanyContext();
     const { postJob, loading } = useJob();
     const navigate = useNavigate();
@@ -34,10 +35,15 @@ const PostJob = () => {
         setInput({ ...input, [e.target.name]: e.target.value });
     };
 
-    const selectChangeHandler = (value) => {
-        const selectedCompany = companies.find((company) => company.name.toLowerCase() === value);
-        setInput({ ...input, companyId: selectedCompany._id });
-    };
+    // const selectChangeHandler = (value) => {
+    //     const selectedCompany = companies.find((company) => company.name.toLowerCase() === value.toLowerCase());
+    //     if (selectedCompany) {
+    //         console.log("Selected Company:", selectedCompany); // Log the entire selected company object
+    //         setInput({ ...input, companyId: selectedCompany.id });
+    //     } else {
+    //         console.error("Company not found for value:", value);
+    //     }
+    // };
 
     const submitHandler = async (e) => {
         e.preventDefault();
@@ -51,8 +57,10 @@ const PostJob = () => {
             jobtype: input.jobtype,
             experiencelevel: input.experiencelevel,
             position: input.position, // Send position as string
-            companyId: input.companyId // Include companyId from input
+            companyId: input.companyId, // Include companyId from input
         };
+
+        console.log("Job Data Being Posted:", jobData); // Log the job data being sent to the backend
 
         // Call the postJob function
         await postJob(jobData);
@@ -136,9 +144,9 @@ const PostJob = () => {
                             />
                         </div>
                         <div>
-                            <Label>Position</Label>
+                            <Label>No of Positions</Label>
                             <Input
-                                type="text" // Changed to text for string input
+                                type="number" // Changed to text for string input
                                 name="position"
                                 value={input.position}
                                 onChange={changeEventHandler}
@@ -147,21 +155,20 @@ const PostJob = () => {
                         </div>
                         {
                             companies.length > 0 && (
-                                <Select onValueChange={selectChangeHandler}>
+                                <Select onValueChange={(value) => setInput({ ...input, companyId: value })}>
                                     <SelectTrigger className="w-[180px]">
                                         <SelectValue placeholder="Select a Company" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                            {
-                                                companies.map((company) => (
-                                                    <SelectItem key={company._id} value={company.name.toLowerCase()}>{company.name}</SelectItem>
-                                                ))
-                                            }
+                                            {companies.map((company) => (
+                                                <SelectItem key={company.id} value={company.id.toString()}>{company.name}</SelectItem>
+                                            ))}
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
                             )
+
                         }
                     </div>
                     {

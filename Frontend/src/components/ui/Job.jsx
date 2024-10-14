@@ -33,8 +33,13 @@ const Job = ({job}) => {
 
             <div className="flex items-center gap-2 my-2">
                 <Button className="p-6" variant="outline" size="icon">
-                    <Avatar>
-                        <AvatarImage src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTf4cBXHnRqShLYgK0qNvI57kA-putli1_csg&s"></AvatarImage>
+                <Avatar>
+                        {/* Fetch the company logo from the backend */}
+                        {job?.company_logo ? (
+                            <AvatarImage src={`http://localhost:5000/uploads/${job?.company_logo}`} alt={`${job?.company_name} Logo`} />
+                        ) : (
+                            <AvatarImage src="https://via.placeholder.com/150" alt="Default Logo" />
+                        )}
                     </Avatar>
                 </Button>
                 <div>
@@ -64,6 +69,7 @@ const Job = ({job}) => {
 Job.propTypes = {
     job: PropTypes.shape({
       company_name:PropTypes.string.isRequired,
+      company_logo: PropTypes.string, // Ensure company_logo is included
       id:PropTypes.number,
       title: PropTypes.string.isRequired,
       description: PropTypes.string,

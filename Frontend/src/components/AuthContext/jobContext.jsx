@@ -19,6 +19,7 @@ export const JobProvider = ({ children }) => {
           const response = await axios.post("/job/postjob", jobData);
           if (response.status === 201) {
             toast.success("Job posted successfully");
+            fetchAdminJobs(); //Re-fetch the Admin jobs after posting the job successfully
           } else {
             toast.error("Failed to post job.");
           }
@@ -59,6 +60,7 @@ export const JobProvider = ({ children }) => {
         try {
             const res = await axios.get('/job/getadminjobs'); // Assuming this is the endpoint for admin jobs
             if (res.data.success) {
+                console.log("from fetchAdminJobs",res.data)
                 setJobs(res.data.jobs); // Store admin-specific jobs in the context
                 toast.success("Admin Jobs Loaded Successfully");
             } else {

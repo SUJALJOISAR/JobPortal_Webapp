@@ -12,6 +12,7 @@ export const postJob = async (req, res) => {
       location,
       jobtype,
       position,
+      companyId,
     } = req.body;
     const userId = req.user.id; // The ID of the user who is posting the job
     const userRole = req.user.role;
@@ -25,7 +26,7 @@ export const postJob = async (req, res) => {
       });
     }
 
-    console.log(req.body);
+    console.log("from postjob Controller:", req.body);
 
     if (
       !title ||
@@ -35,7 +36,8 @@ export const postJob = async (req, res) => {
       experiencelevel === undefined ||
       !location ||
       !jobtype ||
-      !position
+      !position ||
+      !companyId // Check for companyId
     ) {
       return res.status(400).json({
         msg: "Please fill in all required fields (title, description, requirements,salary,experiencelevel ,location, jobtype, position)",
@@ -47,9 +49,9 @@ export const postJob = async (req, res) => {
     const db = await connectDatabase();
 
     // Check if the user (recruiter) is associated with a company
-    const getCompanyQuery = `SELECT id FROM companies WHERE user_id = ?`;
+    const getCompanyQuery = `SELECT id,name FROM companies WHERE id=? AND user_id = ?`;
 
-    db.query(getCompanyQuery, [userId], (err, companyResult) => {
+    db.query(getCompanyQuery, [companyId, userId], (err, companyResult) => {
       if (err) {
         console.error("Database query error:", err);
         return res.status(500).json({
@@ -66,7 +68,7 @@ export const postJob = async (req, res) => {
         });
       }
 
-      const companyId = companyResult[0].id;
+      const { id: companyId, name: companyName } = companyResult[0];
 
       // SQL query to insert the new job into the jobs table
       const postJobQuery = `
@@ -113,6 +115,7 @@ export const postJob = async (req, res) => {
               jobtype,
               position,
               company_id: companyId, // Include the company ID
+              company_name: companyName,
               user_id: userId, // Include the user ID who posted the job
               created_at: new Date().toISOString(), // Provide the created_at timestamp
             },
@@ -148,7 +151,7 @@ export const getAllJobs = async (req, res) => {
 
     // Query to retrieve all jobs along with the associated company ID and name
     let query = `
-     SELECT jobs.*, companies.id AS company_id, companies.name AS company_name 
+     SELECT jobs.*, companies.id AS company_id, companies.name AS company_name,companies.logo AS company_logo
      FROM jobs 
      INNER JOIN companies ON jobs.company = companies.id
    `;
@@ -168,6 +171,8 @@ export const getAllJobs = async (req, res) => {
           success: false,
         });
       }
+
+      console.log("jobs result job controller:", result);
 
       // If no jobs are found
       if (result.length === 0) {
@@ -213,7 +218,7 @@ export const getJobById = async (req, res) => {
     const db = await connectDatabase();
 
     //query to retreive the job by ID
-    let query = "SELECT * FROM jobs where id=?"; //dont use const otherwise it will give error because const things are not be modified further
+    let query = "SELECT jobs.*, companies.name AS company_name FROM jobs JOIN companies ON jobs.company = companies.id WHERE jobs.id=?";
     db.query(query, [jobId], (err, result) => {
       if (err) {
         console.error("Database query error:", err);
@@ -279,7 +284,7 @@ export const getAdminJobs = async (req, res) => {
       JOIN companies ON jobs.company = companies.id 
       WHERE companies.user_id = ?
     `;
-    
+
     //execute the query
     db.query(query, [userId], (err, result) => {
       if (err) {
@@ -353,6 +358,104 @@ export const hasUserApplied = async (req, res) => {
     console.error("Server error:", error);
     return res.status(500).json({
       msg: "Server error",
+      success: false,
+    });
+  }
+};
+
+export const updateJobById = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+    const { title, company, position, location, salary, jobtype } = req.body;
+
+    // Check if jobId is provided
+    if (!jobId) {
+      return res.status(400).json({
+        message: "Job ID is required",
+        success: false,
+      });
+    }
+
+    const db = await connectDatabase();
+
+    // If company field is not provided, retrieve the existing company from the database
+    if (!company) {
+      const selectQuery = `SELECT company FROM jobs WHERE id = ?;`;
+      
+      db.query(selectQuery, [jobId], (err, result) => {
+        if (err || result.length === 0) {
+          console.log("Error retrieving existing company data:", err);
+          return res.status(500).json({
+            message: "Error retrieving existing company data",
+            success: false,
+          });
+        }
+
+        const existingCompany = result[0].company;  // Use existing company if not provided
+
+        // Update the job with the existing company value
+        const updateQuery = `
+          UPDATE jobs 
+          SET title = ?, company = ?, position = ?, location = ?, salary = ?, jobtype = ?
+          WHERE id = ?;
+        `;
+        
+        db.query(updateQuery, [title, existingCompany, position, location, salary, jobtype, jobId], (err, result) => {
+          if (err) {
+            console.log("Database update error:", err);
+            return res.status(500).json({
+              message: "Database update error",
+              success: false,
+            });
+          }
+
+          if (result.affectedRows === 0) {
+            return res.status(404).json({
+              message: "Job not found or no changes were made",
+              success: false,
+            });
+          }
+
+          return res.status(200).json({
+            message: "Job details updated successfully",
+            success: true,
+          });
+        });
+      });
+    } else {
+      // Normal update logic when the company field is provided
+      const updateQuery = `
+        UPDATE jobs 
+        SET title = ?, company = ?, position = ?, location = ?, salary = ?, jobtype = ?
+        WHERE id = ?;
+      `;
+
+      db.query(updateQuery, [title, company, position, location, salary, jobtype, jobId], (err, result) => {
+        if (err) {
+          console.log("Database update error:", err);
+          return res.status(500).json({
+            message: "Database update error",
+            success: false,
+          });
+        }
+
+        if (result.affectedRows === 0) {
+          return res.status(404).json({
+            message: "Job not found or no changes were made",
+            success: false,
+          });
+        }
+
+        return res.status(200).json({
+          message: "Job details updated successfully",
+          success: true,
+        });
+      });
+    }
+  } catch (error) {
+    console.log("Server error:", error);  // Log server errors
+    return res.status(500).json({
+      message: "Server error",
       success: false,
     });
   }
